@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  integration tests:
+  integration:
     name: Run integration tests
     strategy:
       matrix:
