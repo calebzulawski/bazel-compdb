@@ -1,0 +1,69 @@
+load("@aspect_bazel_lib//lib:diff_test.bzl", "diff_test")
+load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_file")
+
+package(default_visibility = ["//visibility:public"])
+
+py_binary(
+    name = "sanitize_compile_commands",
+    srcs = ["sanitize_compile_commands.py"],
+)
+
+genrule(
+    name = "compile_commands",
+    srcs = ["//tests/integration/example_project:all_files"],
+    outs = ["compile_commands.json"],
+    cmd = """
+        TMP_WORKSPACE="$$(mktemp -d)"
+        BAZEL_COMPDB="$${PWD}/$(execpath //:bazel-compdb)"
+        cp -r tests/integration/example_project/* "$$TMP_WORKSPACE"
+        pushd "$$TMP_WORKSPACE"
+        "$$BAZEL_COMPDB" -- //:hello_world
+        popd
+        "$(execpath :sanitize_compile_commands)" "$$TMP_WORKSPACE" "$$TMP_WORKSPACE/compile_commands.json" "$@"
+    """,
+    local = True,
+    tools = [
+        ":sanitize_compile_commands",
+        "//:bazel-compdb",
+    ],
+)
+
+[
+    write_source_file(
+        name = "update_golden_compile_commands_{}".format(os),
+        diff_test = False,
+        in_file = "compile_commands.json",
+        out_file = "compile_commands.{}.json".format(os),
+        target_compatible_with = ["@platforms//os:{}".format(os)],
+    )
+    for os in [
+        "linux",
+        "macos",
+        "windows",
+    ]
+]
+
+alias(
+    name = "update_golden_compile_commands",
+    actual = select({
+        "@platforms//os:{}".format(os): "update_golden_compile_commands_{}".format(os)
+        for os in [
+            "linux",
+            "macos",
+            "windows",
+        ]
+    }),
+)
+
+diff_test(
+    name = "test_compile_commands",
+    file1 = "compile_commands",
+    file2 = select({
+        "@platforms//os:{}".format(os): "compile_commands.{}.json".format(os)
+        for os in [
+            "linux",
+            "macos",
+            "windows",
+        ]
+    }),
+)

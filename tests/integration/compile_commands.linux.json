@@ -1,0 +1,30 @@
+[
+  {
+    "directory": "TEST_WORKSPACE",
+    "arguments": [
+      "TOOLCHAIN_COMPILER",
+      "-U_FORTIFY_SOURCE",
+      "-std=c++17",
+      "-MD",
+      "-MF",
+      "bazel-out/TARGET/bin/_objs/hello_world/hello_world.pic.d",
+      "-iquote",
+      ".",
+      "-iquote",
+      "bazel-out/TARGET/bin",
+      "-iquote",
+      "external/bazel_tools",
+      "-iquote",
+      "bazel-out/TARGET/bin/external/bazel_tools",
+      "-c",
+      "hello_world.cc",
+      "-o",
+      "bazel-out/TARGET/bin/_objs/hello_world/hello_world.pic.o",
+      "-D__DATE__=\"redacted\"",
+      "-D__TIMESTAMP__=\"redacted\"",
+      "-D__TIME__=\"redacted\""
+    ],
+    "file": "hello_world.cc",
+    "output": "bazel-out/TARGET/bin/_objs/hello_world/hello_world.pic.o"
+  }
+]

@@ -1,0 +1,48 @@
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  integration tests:
+    name: Run integration tests
+    strategy:
+      matrix:
+        os:
+          - runs-on: ubuntu-24.04
+            name: linux
+          - runs-on: macos-15
+            name: macos
+          - runs-on: windows-2025
+            name: windows
+    runs-on: ${{ matrix.os.runs-on }}
+    env:
+      GOLDEN_FILE: tests/integration/golden/compile_commands.${{ matrix.os.name }}.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: bazel-contrib/setup-bazel@0.16.0
+        with:
+          bazelisk-cache: true
+
+      - name: Run integration tests
+        id: integration_test
+        run: bazel test //tests/integration/...
+
+      - name: Generate failing compile commands
+        if: steps.integration_test.outcome == 'failure'
+        run: bazel run //tests/integration:update_golden_compile_commands
+
+      - name: Upload failing compile commands
+        if: steps.integration_test.outcome == 'failure'
+        uses: actions/upload-artifact@v6
+        with:
+          name: integration-golden-${{ matrix.os.name }}
+          path: ${{ env.GOLDEN_FILE }}

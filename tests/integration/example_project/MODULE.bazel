@@ -1,0 +1,4 @@
+module(
+    name = "bazel_compdb_example_project",
+    version = "0.0.1",
+)
