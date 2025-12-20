@@ -37,11 +37,11 @@ jobs:
         run: bazel test //tests/integration/...
 
       - name: Generate failing compile commands
-        if: steps.integration_test.outcome == 'failure'
+        if: failure()
         run: bazel run //tests/integration:update_golden_compile_commands
 
       - name: Upload failing compile commands
-        if: steps.integration_test.outcome == 'failure'
+        if: failure()
         uses: actions/upload-artifact@v6
         with:
           name: integration-golden-${{ matrix.os.name }}
