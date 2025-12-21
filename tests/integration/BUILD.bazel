@@ -1,81 +1,11 @@
-load("@aspect_bazel_lib//lib:diff_test.bzl", "diff_test")
-load("@aspect_bazel_lib//lib:write_source_files.bzl", "write_source_file")
-
 package(default_visibility = ["//visibility:public"])
 
 py_binary(
-    name = "sanitize_compile_commands",
-    srcs = ["sanitize_compile_commands.py"],
-)
-
-genrule(
-    name = "compile_commands",
-    srcs = ["//tests/integration/example_project:all_files"],
-    outs = ["compile_commands.json"],
-    cmd = """
-        WORKSPACE_DIR="$(RULEDIR)/integration_workspace"
-        rm -rf "$$WORKSPACE_DIR"
-        mkdir -p "$$WORKSPACE_DIR"
-        cp -r tests/integration/example_project/. "$$WORKSPACE_DIR"
-        BAZEL_COMPDB="$${PWD}/$(execpath //:bazel-compdb)"
-        pushd "$$WORKSPACE_DIR"
-        "$$BAZEL_COMPDB" -- //:hello_world
-        popd
-        "$(execpath :sanitize_compile_commands)" "$$WORKSPACE_DIR" "$$WORKSPACE_DIR/compile_commands.json" "$@"
-    """,
-    cmd_ps = """
-        $workspace = Join-Path "$(RULEDIR)" "integration_workspace"
-        Remove-Item $workspace -Recurse -Force -ErrorAction SilentlyContinue
-        New-Item -ItemType Directory -Path $workspace
-        Copy-Item (Join-Path (Resolve-Path "tests/integration/example_project") "*") -Destination $workspace -Recurse -Force
-        Push-Location $workspace
-        & "$(execpath //:bazel-compdb)" -- //:hello_world
-        Pop-Location
-        & "$(execpath :sanitize_compile_commands)" $workspace (Join-Path $workspace "compile_commands.json") "$(OUTS)"
-    """,
-    local = True,
-    tools = [
-        ":sanitize_compile_commands",
+    name = "integration_test",
+    srcs = ["integration_test.py"],
+    main = "integration_test.py",
+    data = [
         "//:bazel-compdb",
+        "//tests/integration/example_project:all_files",
     ],
-)
-
-[
-    write_source_file(
-        name = "update_golden_compile_commands_{}".format(os),
-        diff_test = False,
-        in_file = "compile_commands.json",
-        out_file = "compile_commands.{}.json".format(os),
-        target_compatible_with = ["@platforms//os:{}".format(os)],
-    )
-    for os in [
-        "linux",
-        "macos",
-        "windows",
-    ]
-]
-
-alias(
-    name = "update_golden_compile_commands",
-    actual = select({
-        "@platforms//os:{}".format(os): "update_golden_compile_commands_{}".format(os)
-        for os in [
-            "linux",
-            "macos",
-            "windows",
-        ]
-    }),
-)
-
-diff_test(
-    name = "test_compile_commands",
-    file1 = "compile_commands",
-    file2 = select({
-        "@platforms//os:{}".format(os): "compile_commands.{}.json".format(os)
-        for os in [
-            "linux",
-            "macos",
-            "windows",
-        ]
-    }),
 )
