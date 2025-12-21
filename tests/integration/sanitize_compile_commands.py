@@ -12,7 +12,7 @@ def sanitize_string(value: str, tmp_dir: str) -> str:
 
 
 def should_drop_flag(value: str) -> bool:
-    return value.startswith("-W") or value.startswith("-f")
+    return any(value.startswith(flag) for flag in ["-W", "-f", "/w", "/z"])
 
 
 def sanitize_entry(entry, tmp_dir: str):
