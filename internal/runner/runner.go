@@ -83,7 +83,7 @@ func Run(ctx context.Context, cfg *config.Options) error {
 }
 
 func assembleBazelArgs(cfg *config.Options) []string {
-	args := []string{"aquery"}
+	args := []string{"aquery", "--features=-compiler_param_file"}
 	if len(cfg.BazelFlags) > 0 {
 		args = append(args, cfg.BazelFlags...)
 	}
