@@ -27,7 +27,7 @@ jobs:
 
       - name: Run integration tests
         id: integration_test
-        run: bazel run //tests/integration:integration_test -o compile_commands.json
+        run: bazel run //tests/integration:integration_test -- -o compile_commands.json
 
       - name: Upload failing compile commands
         if: failure()
