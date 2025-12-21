@@ -1,0 +1,31 @@
+[
+  {
+    "directory": "C:/users/caleb/bazel-compdb/tests/integration/example_project",
+    "arguments": [
+      "TOOLCHAIN_COMPILER",
+      "/nologo",
+      "/DCOMPILER_MSVC",
+      "/DNOMINMAX",
+      "/D_WIN32_WINNT=0x0601",
+      "/D_CRT_SECURE_NO_DEPRECATE",
+      "/D_CRT_SECURE_NO_WARNINGS",
+      "/bigobj",
+      "/EHsc",
+      "/I.",
+      "/Ibazel-out/TARGET/bin",
+      "/Iexternal/bazel_tools",
+      "/Ibazel-out/TARGET/bin/external/bazel_tools",
+      "/showIncludes",
+      "/MD",
+      "/Od",
+      "-D__DATE__=\"redacted\"",
+      "-D__TIMESTAMP__=\"redacted\"",
+      "-D__TIME__=\"redacted\"",
+      "/Fobazel-out/TARGET/bin/_objs/hello_world/hello_world.obj",
+      "/c",
+      "hello_world.cc"
+    ],
+    "file": "hello_world.cc",
+    "output": "bazel-out/TARGET/bin/_objs/hello_world/hello_world.obj"
+  }
+]

@@ -19,7 +19,7 @@ def _golden_path(workspace: Path) -> Path:
     system = platform.system().lower()
     return workspace / "tests" / "integration" / f"compile_commands.{system}.json"
 
-_DROP_FLAG_PREFIXES = ("-W", "-f", "/w", "/z")
+_DROP_FLAG_PREFIXES = ("-W", "-f", "/w", "/z", "/Z")
 
 
 def _sanitize_string(value: str, tmp_dir: str) -> str:
