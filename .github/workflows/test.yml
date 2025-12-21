@@ -13,6 +13,7 @@ jobs:
   integration:
     name: Run integration tests
     strategy:
+      fail-fast: false
       matrix:
         os:
           - runs-on: ubuntu-24.04
