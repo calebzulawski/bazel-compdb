@@ -1,6 +1,6 @@
 [
   {
-    "directory": "C:/users/caleb/bazel-compdb/tests/integration/example_project",
+    "directory": "TEST_WORKSPACE",
     "arguments": [
       "TOOLCHAIN_COMPILER",
       "/nologo",
