@@ -1,15 +1,21 @@
 module(name = "bazel_cdb")
 
-bazel_dep(name = "rules_go", version = "0.47.1")
-bazel_dep(name = "gazelle", version = "0.36.0")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "aspect_bazel_lib", version = "2.20.0")
-bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_go", version = "0.59.0")
+bazel_dep(name = "gazelle", version = "0.47.0")
+
+bazel_dep(name = "rules_snapshot_test", version = "0.0.0", dev_dependency = True)
+bazel_dep(name = "rules_python", version = "1.7.0", dev_dependency = True)
+
+git_override(
+    module_name = "rules_snapshot_test",
+    commit = "564de21cc88662e97e1d1abe8ab2858f031f4d28",
+    remote = "https://github.com/calebzulawski/rules_snapshot_test.git",
+)
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
 go_sdk.download(
     name = "go_sdk",
-    version = "1.21.5",
+    version = "1.25.1",
 )
 use_repo(go_sdk, "go_sdk")
 

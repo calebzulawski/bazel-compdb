@@ -1,11 +1,34 @@
+load("@rules_snapshot_test//snapshot:snapshot_test.bzl", "snapshot_format", "snapshot_test")
+
 package(default_visibility = ["//visibility:public"])
 
 py_binary(
-    name = "integration_test",
+    name = "integration_test_bin",
     srcs = ["integration_test.py"],
     main = "integration_test.py",
+    deps = ["@rules_python//python/runfiles"],
     data = [
         "//:bazel-compdb",
         "//tests/integration/example_project:all_files",
     ],
+)
+
+py_binary(
+    name = "normalize_compdb",
+    srcs = ["normalize_compdb.py"],
+    main = "normalize_compdb.py",
+)
+
+snapshot_format(
+    name = "text",
+    normalize = [":normalize_compdb"],
+    compare = "@rules_snapshot_test//compare:text",
+)
+
+snapshot_test(
+    name = "integration_test",
+    test = ":integration_test_bin",
+    outputs = {
+        "compile_commands.json": ":text",
+    },
 )

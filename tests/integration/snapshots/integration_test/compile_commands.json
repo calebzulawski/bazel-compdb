@@ -1,0 +1,14 @@
+[
+  {
+    "directory": "TEST_WORKSPACE",
+    "arguments": [
+      "TOOLCHAIN_COMPILER",
+      "-c",
+      "hello_world.cc",
+      "-o",
+      "OBJECT_FILE"
+    ],
+    "file": "hello_world.cc",
+    "output": "OBJECT_FILE"
+  }
+]
