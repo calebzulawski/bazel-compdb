@@ -8,7 +8,7 @@ bazel_dep(name = "rules_python", version = "1.7.0", dev_dependency = True)
 
 git_override(
     module_name = "rules_snapshot_test",
-    commit = "564de21cc88662e97e1d1abe8ab2858f031f4d28",
+    commit = "1d18d993a233c7caf246343b559b7ec2a2d08627",
     remote = "https://github.com/calebzulawski/rules_snapshot_test.git",
 )
 
