@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -40,12 +39,22 @@ func Parse() (*Options, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	parseBazelBinary := *bazelBinary
+	if parseBazelBinary == "" {
+		parseBazelBinary = fileCfg.BazelBinary
+	}
+
+	bazelFlagOpts, bazelTargetOpts, err := splitBazelArgs(bazelArgs, parseBazelBinary, cwd)
+	if err != nil {
+		return nil, err
+	}
+
 	merged = mergeOptions(merged, fileCfg)
 
 	merged = mergeOptions(merged, Options{
 		BazelBinary: *bazelBinary,
 	})
-	bazelFlagOpts, bazelTargetOpts := splitBazelArgs(bazelArgs)
 	merged = mergeOptions(merged, Options{
 		BazelFlags: bazelFlagOpts,
 		Targets:    bazelTargetOpts,
@@ -92,32 +101,6 @@ func mergeOptions(base Options, override Options) Options {
 		result.Targets = append([]string(nil), override.Targets...)
 	}
 	return result
-}
-
-func splitBazelArgs(args []string) ([]string, []string) {
-	if len(args) == 0 {
-		return nil, nil
-	}
-	var flags []string
-	var targets []string
-	before, after := splitArgs(args)
-
-	for _, arg := range before {
-		if strings.HasPrefix(arg, "-") {
-			flags = append(flags, arg)
-		} else {
-			targets = append(targets, arg)
-		}
-	}
-
-	if len(after) > 0 {
-		joined := strings.TrimSpace(strings.Join(after, " "))
-		if joined != "" {
-			targets = append(targets, joined)
-		}
-	}
-
-	return flags, targets
 }
 
 func splitArgs(args []string) ([]string, []string) {
