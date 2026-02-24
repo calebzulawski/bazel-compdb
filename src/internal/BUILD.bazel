@@ -31,7 +31,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         ":analysis_go_proto",
-        "//internal/config",
+        "//src/internal/config",
         "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )

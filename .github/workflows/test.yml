@@ -20,12 +20,13 @@ jobs:
       - name: Run format check
         run: bazel run //tools:format.check
         shell: bash
-  integration:
-    name: Run integration tests
+  example_project:
+    name: Example project compdb validation
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-15, windows-2025]
+        bazel: ["7.x", "8.x", "9.x"]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -33,7 +34,12 @@ jobs:
       - uses: bazel-contrib/setup-bazel@0.16.0
         with:
           bazelisk-cache: true
-      - name: Run integration tests
-        id: integration_test
-        run: bazel test //tests/integration:integration_test --test_output=all
+      - name: Run bazel-compdb and validate compile_commands
         shell: bash
+        working-directory: tests/integration
+        run: |
+          rm -f compile_commands.json
+          bazel run @bazel-compdb
+          bazel run //:compare_compdb
+        env:
+          USE_BAZEL_VERSION: ${{ matrix.bazel }}
