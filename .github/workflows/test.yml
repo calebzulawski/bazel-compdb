@@ -1,5 +1,4 @@
 name: Test
-
 on:
   push:
     branches:
@@ -8,8 +7,19 @@ on:
     branches:
       - main
   workflow_dispatch:
-
 jobs:
+  format:
+    name: Check formatting
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: bazel-contrib/setup-bazel@0.16.0
+        with:
+          bazelisk-cache: true
+      - name: Run format check
+        run: bazel run //tools:format.check
+        shell: bash
   integration:
     name: Run integration tests
     strategy:
@@ -20,11 +30,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
       - uses: bazel-contrib/setup-bazel@0.16.0
         with:
           bazelisk-cache: true
-
       - name: Run integration tests
         id: integration_test
         run: bazel test //tests/integration:integration_test --test_output=all

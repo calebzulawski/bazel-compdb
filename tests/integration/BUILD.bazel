@@ -5,12 +5,12 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "integration_test_bin",
     srcs = ["integration_test.py"],
-    main = "integration_test.py",
-    deps = ["@rules_python//python/runfiles"],
     data = [
         "//:bazel-compdb",
         "//tests/integration/example_project:all_files",
     ],
+    main = "integration_test.py",
+    deps = ["@rules_python//python/runfiles"],
 )
 
 py_binary(
@@ -21,14 +21,14 @@ py_binary(
 
 snapshot_format(
     name = "text",
-    normalize = [":normalize_compdb"],
     compare = "@rules_snapshot_test//compare:text",
+    normalize = [":normalize_compdb"],
 )
 
 snapshot_test(
     name = "integration_test",
-    test = ":integration_test_bin",
     outputs = {
         "compile_commands.json": ":text",
     },
+    test = ":integration_test_bin",
 )

@@ -16,7 +16,9 @@ def _normalize_string(value: str) -> str:
         "TEST_WORKSPACE",
         normalized,
     )
-    normalized = re.sub(r"bazel-out/[A-Za-z0-9._-]+/bin", "bazel-out/TARGET/bin", normalized)
+    normalized = re.sub(
+        r"bazel-out/[A-Za-z0-9._-]+/bin", "bazel-out/TARGET/bin", normalized
+    )
     return normalized
 
 
@@ -45,7 +47,9 @@ def _normalize_output(value: str) -> str:
 def _normalize_compile_command(entry: dict) -> dict:
     directory = "TEST_WORKSPACE" if "directory" in entry else None
     file_value = _normalize_file(entry.get("file", "")) if "file" in entry else None
-    output_value = _normalize_output(entry.get("output", "")) if "output" in entry else None
+    output_value = (
+        _normalize_output(entry.get("output", "")) if "output" in entry else None
+    )
     arguments = None
     if "arguments" in entry or "command" in entry:
         arguments = [

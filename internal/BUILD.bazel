@@ -24,14 +24,14 @@ go_proto_library(
 go_library(
     name = "runner",
     srcs = [
-        "runner/runner.go",
         "runner/compile_commands.go",
+        "runner/runner.go",
     ],
     importpath = "bazel-compdb/internal/runner",
     visibility = ["//visibility:public"],
     deps = [
         ":analysis_go_proto",
-        "//internal/config:config",
+        "//internal/config",
         "@org_golang_google_protobuf//proto:go_default_library",
     ],
 )
