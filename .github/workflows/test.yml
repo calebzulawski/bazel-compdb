@@ -20,6 +20,18 @@ jobs:
       - name: Run format check
         run: bazel run //tools:format.check
         shell: bash
+  test:
+    name: Run tests
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - uses: bazel-contrib/setup-bazel@0.16.0
+        with:
+          bazelisk-cache: true
+      - name: Run tests
+        run: bazel test //...
+        shell: bash
   example_project:
     name: Example project compdb validation
     strategy:
