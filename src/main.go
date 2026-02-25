@@ -13,7 +13,18 @@ import (
 	"bazel-compdb/internal/runner"
 )
 
-var version = "dev"
+// moduleVersion is set via x_defs on the Bazel binary target.
+var moduleVersion = ""
+
+// buildVersion is injected at link time for release binaries.
+var buildVersion = ""
+
+func reportedVersion() string {
+	if buildVersion != "" {
+		return buildVersion
+	}
+	return moduleVersion
+}
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -31,7 +42,7 @@ func main() {
 			os.Exit(0)
 		}
 		if errors.Is(err, config.ErrVersion) {
-			fmt.Println(version)
+			fmt.Println(reportedVersion())
 			os.Exit(0)
 		}
 		fmt.Fprintln(os.Stderr, err)

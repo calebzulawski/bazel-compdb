@@ -1,4 +1,4 @@
-load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_go//go:def.bzl", "go_binary", "go_library", "go_test")
 
 go_library(
     name = "bazel_compdb_lib",
@@ -15,4 +15,14 @@ go_binary(
     name = "bazel-compdb",
     embed = [":bazel_compdb_lib"],
     visibility = ["//:__pkg__"],
+    x_defs = {
+        "bazel-compdb.moduleVersion": "0.0.0",
+        "bazel-compdb.buildVersion": "{STABLE_VERSION}",
+    },
+)
+
+go_test(
+    name = "main_test",
+    srcs = ["main_test.go"],
+    embed = [":bazel_compdb_lib"],
 )
