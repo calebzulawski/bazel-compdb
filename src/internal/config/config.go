@@ -1,30 +1,45 @@
 package config
 
 import (
-	"flag"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"github.com/alecthomas/kong"
 	"gopkg.in/yaml.v3"
 )
 
 const defaultConfigName = ".bazel-compdb"
 
+var (
+	ErrHelp    = errors.New("help requested")
+	ErrVersion = errors.New("version requested")
+)
+
 type Options struct {
 	BazelBinary string   `yaml:"bazel"`
 	BazelFlags  []string `yaml:"bazel_flags"`
 	Targets     []string `yaml:"targets"`
+	OutputPath  string   `yaml:"output"`
+}
+
+type cliOptions struct {
+	BazelBinary string `name:"bazel" help:"Path to the bazel binary."`
+	Help        bool   `name:"help" short:"h" help:"Show this help."`
+	OutputPath  string `name:"output" short:"o" help:"Path to write compile_commands.json."`
+	Version     bool   `name:"version" short:"v" help:"Show version."`
+}
+
+type invocation struct {
+	toolArgs  []string
+	bazelArgs []string
 }
 
 func Parse() (*Options, error) {
-	args := os.Args[1:]
-	programArgs, bazelArgs := splitArgs(args)
-	flagSet := flag.NewFlagSet("bazel-compdb", flag.ContinueOnError)
-
-	bazelBinary := flagSet.String("bazel", "", "Path to the bazel binary")
-
-	if err := flagSet.Parse(programArgs); err != nil {
+	inv := parseInvocation(os.Args[1:])
+	cliOpts, err := parseToolFlags(inv.toolArgs)
+	if err != nil {
 		return nil, err
 	}
 
@@ -33,38 +48,69 @@ func Parse() (*Options, error) {
 		return nil, fmt.Errorf("unable to determine current directory: %w", err)
 	}
 
-	var merged Options
-
 	fileCfg, err := loadConfigs(cwd)
 	if err != nil {
 		return nil, err
 	}
 
-	parseBazelBinary := *bazelBinary
+	parseBazelBinary := cliOpts.BazelBinary
 	if parseBazelBinary == "" {
 		parseBazelBinary = fileCfg.BazelBinary
 	}
 
-	bazelFlagOpts, bazelTargetOpts, err := splitBazelArgs(bazelArgs, parseBazelBinary, cwd)
+	bazelFlagOpts, bazelTargetOpts, err := splitBazelArgs(inv.bazelArgs, parseBazelBinary, cwd)
 	if err != nil {
 		return nil, err
 	}
 
-	merged = mergeOptions(merged, fileCfg)
-
-	merged = mergeOptions(merged, Options{
-		BazelBinary: *bazelBinary,
-	})
-	merged = mergeOptions(merged, Options{
-		BazelFlags: bazelFlagOpts,
-		Targets:    bazelTargetOpts,
-	})
-
-	if len(merged.Targets) == 0 {
-		merged.Targets = []string{"//..."}
+	overlay := Options{
+		BazelBinary: cliOpts.BazelBinary,
+		OutputPath:  cliOpts.OutputPath,
 	}
+	overlay.BazelFlags = bazelFlagOpts
+	overlay.Targets = bazelTargetOpts
+
+	merged := mergeOptions(fileCfg, overlay)
+	applyDefaults(&merged)
 
 	return &merged, nil
+}
+
+func parseToolFlags(args []string) (cliOptions, error) {
+	var cli cliOptions
+	parser, err := kong.New(
+		&cli,
+		kong.Name("bazel-compdb"),
+		kong.NoDefaultHelp(),
+		kong.Help(helpPrinter),
+	)
+	if err != nil {
+		return cliOptions{}, err
+	}
+	ctx, err := parser.Parse(args)
+	if err != nil {
+		return cliOptions{}, err
+	}
+	if cli.Help {
+		if err := ctx.PrintUsage(false); err != nil {
+			return cliOptions{}, err
+		}
+		return cliOptions{}, ErrHelp
+	}
+	if cli.Version {
+		return cliOptions{}, ErrVersion
+	}
+	return cli, nil
+}
+
+func helpPrinter(options kong.HelpOptions, ctx *kong.Context) error {
+	fmt.Fprintln(ctx.Stdout, "Usage:")
+	fmt.Fprintln(ctx.Stdout, "  bazel-compdb [arguments] -- [bazel arguments]")
+	fmt.Fprintln(ctx.Stdout, "  bazel-compdb [bazel arguments]")
+	fmt.Fprintln(ctx.Stdout)
+
+	options.NoAppSummary = true
+	return kong.DefaultHelpPrinter(options, ctx)
 }
 
 func loadConfigs(workspace string) (Options, error) {
@@ -100,14 +146,40 @@ func mergeOptions(base Options, override Options) Options {
 	if override.Targets != nil {
 		result.Targets = append([]string(nil), override.Targets...)
 	}
+	if override.OutputPath != "" {
+		result.OutputPath = override.OutputPath
+	}
 	return result
 }
 
-func splitArgs(args []string) ([]string, []string) {
+func parseInvocation(args []string) invocation {
 	for idx, arg := range args {
 		if arg == "--" {
-			return args[:idx], args[idx+1:]
+			return invocation{
+				toolArgs:  args[:idx],
+				bazelArgs: args[idx+1:],
+			}
 		}
 	}
-	return args, nil
+	if len(args) == 1 {
+		switch args[0] {
+		case "-h", "--help", "-v", "--version":
+			return invocation{toolArgs: args}
+		}
+	}
+	if len(args) == 0 {
+		return invocation{toolArgs: args}
+	}
+
+	// Without an explicit separator, treat all CLI args as Bazel args.
+	return invocation{bazelArgs: args}
+}
+
+func applyDefaults(opts *Options) {
+	if len(opts.Targets) == 0 {
+		opts.Targets = []string{"//..."}
+	}
+	if opts.OutputPath == "" {
+		opts.OutputPath = "compile_commands.json"
+	}
 }

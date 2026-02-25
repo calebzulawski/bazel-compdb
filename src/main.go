@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,8 @@ import (
 	"bazel-compdb/internal/config"
 	"bazel-compdb/internal/runner"
 )
+
+var version = "dev"
 
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -24,6 +27,13 @@ func main() {
 
 	cfg, err := config.Parse()
 	if err != nil {
+		if errors.Is(err, config.ErrHelp) {
+			os.Exit(0)
+		}
+		if errors.Is(err, config.ErrVersion) {
+			fmt.Println(version)
+			os.Exit(0)
+		}
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(2)
 	}

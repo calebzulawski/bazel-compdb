@@ -14,15 +14,26 @@ type compileCommand struct {
 	Output    string   `json:"output"`
 }
 
-func writeCompileCommands(workspace string, commands []compileCommand) error {
-	path := filepath.Join(workspace, "compile_commands.json")
+func writeCompileCommands(workspace, outputPath string, commands []compileCommand) error {
+	outputPath = filepath.Clean(outputPath)
+	path := outputPath
+	if filepath.IsAbs(outputPath) {
+		path = outputPath
+	} else {
+		path = filepath.Join(workspace, outputPath)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create output directory %s: %w", filepath.Dir(path), err)
+	}
+
 	data, err := json.MarshalIndent(commands, "", "  ")
 	if err != nil {
-		return fmt.Errorf("marshal compile_commands.json: %w", err)
+		return fmt.Errorf("marshal compile commands: %w", err)
 	}
 	data = append(data, '\n')
 	if err := os.WriteFile(path, data, 0o644); err != nil {
-		return fmt.Errorf("write compile_commands.json: %w", err)
+		return fmt.Errorf("write %s: %w", path, err)
 	}
 	return nil
 }

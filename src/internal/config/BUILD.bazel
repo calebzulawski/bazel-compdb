@@ -8,11 +8,17 @@ go_library(
     ],
     importpath = "bazel-compdb/internal/config",
     visibility = ["//visibility:public"],
-    deps = ["@in_gopkg_yaml_v3//:go_default_library"],
+    deps = [
+        "@com_github_alecthomas_kong//:kong",
+        "@in_gopkg_yaml_v3//:go_default_library",
+    ],
 )
 
 go_test(
     name = "config_test",
-    srcs = ["bazel_args_splitter_test.go"],
+    srcs = [
+        "bazel_args_splitter_test.go",
+        "config_test.go",
+    ],
     embed = [":config"],
 )

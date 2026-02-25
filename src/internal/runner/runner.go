@@ -75,7 +75,7 @@ func Run(ctx context.Context, cfg *config.Options) error {
 		})
 	}
 
-	if err := writeCompileCommands(workspace, commands); err != nil {
+	if err := writeCompileCommands(workspace, cfg.OutputPath, commands); err != nil {
 		return err
 	}
 
