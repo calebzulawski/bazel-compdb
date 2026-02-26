@@ -4,10 +4,12 @@ Generate `compile_commands.json` from Bazel.
 
 ## Install
 
-### Option 1: Download a release
-Download a prebuilt binary from the project releases and put `bazel-compdb` on your `PATH`.
+You may either download a prebuilt binary or add `bazel-compdb` to your `MODULE.bazel`.
 
-### Option 2: Use via Bazel (`bazel_dep`)
+### Download a release
+Download a prebuilt binary from the [latest release](https://github.com/calebzulawski/bazel-compdb/releases/latest).
+
+### Use via Bazel
 Add `bazel-compdb` to your `MODULE.bazel`:
 
 ```starlark

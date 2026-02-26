@@ -12,8 +12,6 @@ ARTIFACTS_DIR="${WORKSPACE_DIR}/artifacts"
 git archive --format=tar --prefix=${PREFIX}/ ${TAG} | gzip >"$ARCHIVE"
 SHA=$(shasum -a 256 "$ARCHIVE" | awk '{print $1}')
 
-find "${ARTIFACTS_DIR}" -type f -name "*.tar.gz" -exec cp -f -t "${WORKSPACE_DIR}" {} +
-
 cat <<EOF
 ## Using a prebuilt version
 
