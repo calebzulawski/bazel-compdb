@@ -109,7 +109,6 @@ func runBazelParseBEP(args []string, bazelBinary, cwd string) (string, error) {
 	}
 
 	cmdArgs := []string{
-		"--ignore_all_rc_files",
 		"build",
 		"--nobuild",
 		"--build_event_json_file=" + eventPath,
