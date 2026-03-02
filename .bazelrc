@@ -1,3 +1,4 @@
 build:release -c opt
+build:release --strip=always
 build:release --stamp
 build:release --workspace_status_command=./tools/workspace_status.sh
